@@ -1,0 +1,40 @@
+{
+  "version": "0",
+  "name": "electrobun",
+  "stages": [
+    {
+      "name": "verify",
+      "queueSafe": true,
+      "reuseQueueRun": true,
+      "jobs": [
+        {
+          "name": "unit-node",
+          "image": "iot-lab-ci:node22-python3-numpy-v2",
+          "user": "daemon",
+          "env": {
+            "HOME": "/tmp"
+          },
+          "steps": [
+            {
+              "run": "cd package && npm ci --ignore-scripts --no-audit --no-fund"
+            },
+            {
+              "run": "cd package && node --test scripts/webkit-bridge-auth.test.mjs src/shared/spell-check.test.js"
+            },
+            {
+              "run": "cd package && node --test ../npm/electrobun/test/bootstrap.test.mjs ../npm/electrobun/test/package.test.mjs ../npm/scripts/accept-published-bootstrap.test.mjs ../npm/scripts/check-published-bootstrap.test.mjs ../npm/scripts/stage-hutch-release-artifacts.test.mjs"
+            },
+            {
+              "run": "cd package && node --test scripts/version-config.test.mjs scripts/release-git.test.mjs scripts/verify-release-version.test.mjs scripts/create-artifact-index.test.mjs scripts/verify-release-assets.test.mjs scripts/release-publication-contract.test.mjs"
+            }
+          ],
+          "limits": {
+            "timeoutSec": 600,
+            "cpus": 2,
+            "memoryMb": 4096
+          }
+        }
+      ]
+    }
+  ]
+}
